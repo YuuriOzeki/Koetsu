@@ -82,13 +82,13 @@ try {
   await content.locator('input[name="ANSYONO"]').fill(PASSWORD);
   await content.locator('input[type="button"][value*="認"]').click();
 
-  await page.waitForTimeout(1_000);
-  content = await mainContent(page);
+  await page.locator('iframe#id_main').waitFor({ state: 'attached' });
+  content = page.frameLocator('iframe#id_main');
+  await content.locator('select[name="CBOSYA"]').waitFor();
   await content.locator('select[name="CBOSYA"]').selectOption({ label: '実車' });
   await content.locator('input[type="button"][value*="車種選択"]').click();
 
-  await page.waitForTimeout(1_000);
-  content = await mainContent(page);
+  await content.locator('td.Aki, td.Full').first().waitFor();
   const dateIds = targetDateIds();
   const slots = (await content.locator('td.Aki').evaluateAll((cells) =>
     cells.map((cell) => ({ id: cell.id, text: cell.textContent?.trim() ?? '' })),
