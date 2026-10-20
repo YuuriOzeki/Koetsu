@@ -1,0 +1,39 @@
+name: Check driving-school vacancies
+
+on:
+  schedule:
+    # GitHub Actions の cron は UTC。日本時間で終日15分ごと。
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npx playwright install --with-deps chromium
+      - name: Restore previous vacancy state
+        uses: actions/cache/restore@v4
+        with:
+          path: .state/known-slots.json
+          key: vacancy-state-${{ github.run_id }}
+          restore-keys: vacancy-state-
+      - run: npm run check
+        env:
+          USERNAME: ${{ secrets.USERNAME }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      - name: Save vacancy state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .state/known-slots.json
+          key: vacancy-state-${{ github.run_id }}
