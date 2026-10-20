@@ -2,8 +2,8 @@ name: Check driving-school vacancies
 
 on:
   schedule:
-    # GitHub Actions の cron は UTC。日本時間で終日15分ごと。
-    - cron: '*/15 * * * *'
+    # GitHub Actions の cron は UTC。日本時間で終日 :05 / :20 / :35 / :50 に実行。
+    - cron: '5,20,35,50 * * * *'
   workflow_dispatch:
 
 permissions:
