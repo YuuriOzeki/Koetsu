@@ -15,12 +15,13 @@ const {
   USERNAME, PASSWORD, DISCORD_WEBHOOK_URL,
 } = process.env;
 
-const LOGIN_URL = 'http://180.42.83.34/yoyaku/main1.htm';
+const LOGIN_URL = 'http://180.42.83.34/yoyaku/';
+const MAIN_FRAME_SELECTOR = 'iframe#id_mainf';
 const STATE_FILE = process.env.STATE_FILE || '.state/known-slots.json';
 
 async function mainContent(page) {
-  const frame = page.frameLocator('iframe#id_main');
-  return (await page.locator('iframe#id_main').count()) ? frame : page;
+  const frame = page.frameLocator(MAIN_FRAME_SELECTOR);
+  return (await page.locator(MAIN_FRAME_SELECTOR).count()) ? frame : page;
 }
 
 function slotFromId(id) {
@@ -77,13 +78,12 @@ try {
   page.setDefaultTimeout(20_000);
 
   await page.goto(LOGIN_URL, { waitUntil: 'domcontentloaded' });
-  let content = await mainContent(page);
+  await page.locator(MAIN_FRAME_SELECTOR).waitFor({ state: 'attached' });
+  let content = page.frameLocator(MAIN_FRAME_SELECTOR);
   await content.locator('input[name="SEITONO"]').fill(USERNAME);
   await content.locator('input[name="ANSYONO"]').fill(PASSWORD);
   await content.locator('input[type="button"][value*="認"]').click();
 
-  await page.locator('iframe#id_main').waitFor({ state: 'attached' });
-  content = page.frameLocator('iframe#id_main');
   await content.locator('select[name="CBOSYA"]').waitFor();
   await content.locator('select[name="CBOSYA"]').selectOption({ label: '実車' });
   await content.locator('input[type="button"][value*="車種選択"]').click();
